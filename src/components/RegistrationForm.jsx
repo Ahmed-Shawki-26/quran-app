@@ -53,8 +53,10 @@ export default function RegistrationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const isLevelValid = formData.goldenPsalms || formData.level;
+    
     if (!validationState.isValid || !isPhoneValid || !isNameValid() || 
-        !formData.center || !formData.level || !formData.examCommittee || formData.address.trim().length < 5) return;
+        !formData.center || !isLevelValid || !formData.examCommittee || formData.address.trim().length < 5) return;
 
     setStatus('submitting');
     setErrorMessage('');
@@ -81,7 +83,7 @@ export default function RegistrationForm() {
             full_name: formData.fullName.trim(),
             national_id: formData.nationalId,
             phone_number: formData.phone,
-            level: formData.level,
+            level: formData.level || 'لم يحدد (مزامير ذهبية)',
             center: formData.center,
             exam_committee: formData.examCommittee,
             address: formData.address.trim(),
@@ -292,15 +294,15 @@ export default function RegistrationForm() {
             <div>
               <label className="flex items-center gap-2 text-gray-700 font-bold mb-2">
                 <BookOpen className="w-4 h-4 text-islamic-primary" />
-                المستوى <span className="text-red-500">*</span>
+                المستوى {!formData.goldenPsalms && <span className="text-red-500">*</span>}
               </label>
               <select
-                required
+                required={!formData.goldenPsalms}
                 className={`input-field ${formData.level ? 'border-green-500' : ''}`}
                 value={formData.level}
                 onChange={e => setFormData({...formData, level: e.target.value})}
               >
-                <option value="">اختر مستوى الحفظ...</option>
+                <option value="">{formData.goldenPsalms ? 'اختياري في حالة المزامير' : 'اختر مستوى الحفظ...'}</option>
                 {LEVELS.map(l => (
                   <option key={l} value={l}>{l}</option>
                 ))}
