@@ -120,11 +120,11 @@ export default function AdminDashboard() {
         const age = row.birth_date ? Math.floor((new Date() - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '';
         return [
           `"${row.full_name}"`,
-          `"${row.national_id}"`,
+          `"\t${row.national_id}"`,
           `"${row.birth_date || ''}"`,
           `"${age}"`,
           `"${row.gender || ''}"`,
-          `"${row.phone_number}"`,
+          `"\t${row.phone_number}"`,
           `"${row.level}"`,
           `"${row.golden_psalms ? 'نعم' : 'لا'}"`,
           `"${row.center}"`,
