@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { MINYA_CENTERS, LEVELS } from '../utils/nationalId';
-import { Search, Filter, LogOut, Users, Download, Loader2, Edit2, Trash2, X } from 'lucide-react';
+import { MINYA_CENTERS, LEVELS, EXAM_COMMITTEES } from '../utils/nationalId';
+import { Search, Filter, LogOut, Users, Download, Loader2, Edit2, Trash2, X, BookOpen, MapPin, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -10,7 +10,8 @@ export default function AdminDashboard() {
   const [filters, setFilters] = useState({
     search: '',
     center: '',
-    level: ''
+    level: '',
+    examCommittee: ''
   });
   const [editingRow, setEditingRow] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -68,7 +69,9 @@ export default function AdminDashboard() {
           phone_number: editingRow.phone_number,
           level: editingRow.level,
           center: editingRow.center,
-          address: editingRow.address
+          exam_committee: editingRow.exam_committee,
+          address: editingRow.address,
+          golden_psalms: editingRow.golden_psalms
         })
         .eq('national_id', editingRow.national_id);
 
@@ -89,26 +92,47 @@ export default function AdminDashboard() {
                         (item.national_id || '').includes(filters.search);
     const matchCenter = !filters.center || item.center === filters.center;
     const matchLevel = !filters.level || item.level === filters.level;
-    return matchSearch && matchCenter && matchLevel;
+    const matchCommittee = !filters.examCommittee || item.exam_committee === filters.examCommittee;
+    return matchSearch && matchCenter && matchLevel && matchCommittee;
   });
 
   const stats = {
-    total: contestants.length
+    total: contestants.length,
+    byLevel: LEVELS.reduce((acc, level) => {
+      acc[level] = contestants.filter(c => c.level === level).length;
+      return acc;
+    }, {}),
+    byCenter: MINYA_CENTERS.reduce((acc, center) => {
+      acc[center] = contestants.filter(c => c.center === center).length;
+      return acc;
+    }, {}),
+    byCommittee: EXAM_COMMITTEES.reduce((acc, committee) => {
+      acc[committee] = contestants.filter(c => c.exam_committee === committee).length;
+      return acc;
+    }, {})
   };
 
   const downloadCSV = () => {
-    const headers = ['الاسم', 'الرقم القومي', 'الهاتف', 'المستوى', 'المركز', 'العنوان', 'تاريخ التسجيل'];
+    const headers = ['الاسم', 'الرقم القومي', 'تاريخ الميلاد', 'العمر', 'النوع', 'الهاتف', 'المستوى', 'المزامير الذهبية', 'المركز', 'اللجنة', 'العنوان', 'تاريخ التسجيل'];
     const csvContent = [
       headers.join(','),
-      ...filteredData.map(row => [
-        `"${row.full_name}"`,
-        `"${row.national_id}"`,
-        `"${row.phone_number}"`,
-        `"${row.level}"`,
-        `"${row.center}"`,
-        `"${row.address}"`,
-        `"${new Date(row.created_at).toLocaleDateString('ar-EG')}"`
-      ].join(','))
+      ...filteredData.map(row => {
+        const age = row.birth_date ? Math.floor((new Date() - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '';
+        return [
+          `"${row.full_name}"`,
+          `"${row.national_id}"`,
+          `"${row.birth_date || ''}"`,
+          `"${age}"`,
+          `"${row.gender || ''}"`,
+          `"${row.phone_number}"`,
+          `"${row.level}"`,
+          `"${row.golden_psalms ? 'نعم' : 'لا'}"`,
+          `"${row.center}"`,
+          `"${row.exam_committee || ''}"`,
+          `"${row.address}"`,
+          `"${new Date(row.created_at).toLocaleDateString('ar-EG')}"`
+        ].join(',');
+      })
     ].join('\n');
 
     const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -141,7 +165,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Total */}
         <div className="glass-panel p-6 rounded-2xl flex items-center gap-4">
           <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
             <Users className="w-6 h-6" />
@@ -149,6 +174,63 @@ export default function AdminDashboard() {
           <div>
             <p className="text-gray-500 text-sm">إجمالي المسجلين</p>
             <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+          </div>
+        </div>
+
+        {/* By Level */}
+        <div className="glass-panel p-4 rounded-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <BookOpen className="w-5 h-5 text-purple-600" />
+            <p className="text-gray-700 font-bold text-sm">حسب المستوى</p>
+          </div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {Object.entries(stats.byLevel).filter(([_, count]) => count > 0).map(([level, count]) => (
+              <div key={level} className="flex justify-between text-xs">
+                <span className="text-gray-600 truncate flex-1">{level}</span>
+                <span className="font-bold text-purple-600 mr-2">{count}</span>
+              </div>
+            ))}
+            {Object.values(stats.byLevel).every(c => c === 0) && (
+              <p className="text-gray-400 text-xs">لا توجد بيانات</p>
+            )}
+          </div>
+        </div>
+
+        {/* By Center */}
+        <div className="glass-panel p-4 rounded-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-5 h-5 text-orange-600" />
+            <p className="text-gray-700 font-bold text-sm">حسب المركز</p>
+          </div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {Object.entries(stats.byCenter).filter(([_, count]) => count > 0).map(([center, count]) => (
+              <div key={center} className="flex justify-between text-xs">
+                <span className="text-gray-600">{center}</span>
+                <span className="font-bold text-orange-600 mr-2">{count}</span>
+              </div>
+            ))}
+            {Object.values(stats.byCenter).every(c => c === 0) && (
+              <p className="text-gray-400 text-xs">لا توجد بيانات</p>
+            )}
+          </div>
+        </div>
+
+        {/* By Committee */}
+        <div className="glass-panel p-4 rounded-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <Building2 className="w-5 h-5 text-blue-600" />
+            <p className="text-gray-700 font-bold text-sm">حسب اللجنة</p>
+          </div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {Object.entries(stats.byCommittee).filter(([_, count]) => count > 0).map(([committee, count]) => (
+              <div key={committee} className="flex justify-between text-xs">
+                <span className="text-gray-600 truncate flex-1">{committee}</span>
+                <span className="font-bold text-blue-600 mr-2">{count}</span>
+              </div>
+            ))}
+            {Object.values(stats.byCommittee).every(c => c === 0) && (
+              <p className="text-gray-400 text-xs">لا توجد بيانات</p>
+            )}
           </div>
         </div>
       </div>
@@ -159,7 +241,7 @@ export default function AdminDashboard() {
           <Filter className="w-5 h-5 text-islamic-primary" />
           تصفية البحث
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <input
               type="text"
@@ -189,6 +271,15 @@ export default function AdminDashboard() {
             <option value="">كل المستويات</option>
             {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
+
+          <select
+            className="input-field"
+            value={filters.examCommittee}
+            onChange={e => setFilters({...filters, examCommittee: e.target.value})}
+          >
+            <option value="">كل اللجان</option>
+            {EXAM_COMMITTEES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
       </div>
 
@@ -201,8 +292,11 @@ export default function AdminDashboard() {
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">الاسم</th>
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">الرقم القومي</th>
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">رقم الهاتف</th>
+                <th className="px-6 py-4 text-gray-600 font-bold text-sm">العمر</th>
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">المستوى</th>
+                <th className="px-6 py-4 text-gray-600 font-bold text-sm">مزامير</th>
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">المركز</th>
+                <th className="px-6 py-4 text-gray-600 font-bold text-sm">اللجنة</th>
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">تاريخ التسجيل</th>
                 <th className="px-6 py-4 text-gray-600 font-bold text-sm">إجراءات</th>
               </tr>
@@ -210,29 +304,44 @@ export default function AdminDashboard() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan="10" className="px-6 py-10 text-center text-gray-500">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
                     جاري تحميل البيانات...
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan="10" className="px-6 py-10 text-center text-gray-500">
                     لا توجد بيانات مطابقة للبحث
                   </td>
                 </tr>
               ) : (
-                filteredData.map((row) => (
+                filteredData.map((row) => {
+                  const age = row.birth_date ? Math.floor((new Date() - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '-';
+                  return (
                   <tr key={row.national_id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900">{row.full_name}</td>
                     <td className="px-6 py-4 text-gray-600 font-mono text-sm" dir="ltr">{row.national_id}</td>
                     <td className="px-6 py-4 text-gray-600 font-mono text-sm" dir="ltr">{row.phone_number}</td>
+                    <td className="px-6 py-4 text-gray-600 text-sm text-center font-bold">{age}</td>
                     <td className="px-6 py-4 text-gray-600 text-sm">
                       <span className="inline-block px-2 py-1 rounded-full bg-islamic-primary/10 text-islamic-primary text-xs font-bold">
                         {row.level}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      {row.golden_psalms ? (
+                        <span className="text-amber-500 text-lg">⭐</span>
+                      ) : (
+                        <span className="text-gray-300">-</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">{row.center}</td>
+                    <td className="px-6 py-4 text-gray-600 text-sm">
+                      <span className="inline-block px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                        {row.exam_committee || '-'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-gray-500 text-sm">
                       {new Date(row.created_at).toLocaleDateString('ar-EG')}
                     </td>
@@ -255,7 +364,7 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                   </tr>
-                ))
+                )})
               )}
             </tbody>
           </table>
@@ -319,6 +428,31 @@ export default function AdminDashboard() {
                     {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-bold mb-2">اللجنة</label>
+                <select
+                  className="input-field"
+                  value={editingRow.exam_committee || ''}
+                  onChange={e => setEditingRow({...editingRow, exam_committee: e.target.value})}
+                >
+                  <option value="">اختر اللجنة...</option>
+                  {EXAM_COMMITTEES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              {/* Golden Psalms Checkbox */}
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editingRow.golden_psalms || false}
+                    onChange={e => setEditingRow({...editingRow, golden_psalms: e.target.checked})}
+                    className="w-5 h-5 text-amber-600 rounded border-amber-300"
+                  />
+                  <span className="text-gray-800 font-bold">مستوى المزامير الذهبية</span>
+                </label>
               </div>
 
               <div>

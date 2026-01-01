@@ -3,7 +3,7 @@ import RegistrationForm from './components/RegistrationForm';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import { BookOpen } from 'lucide-react';
+
 
 function App() {
   return (
@@ -19,12 +19,28 @@ function App() {
           <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-islamic-primary/10 sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
               <Link to="/" className="flex items-center gap-3 group">
-                <div className="w-12 h-12 bg-gradient-to-br from-islamic-primary to-emerald-600 text-white rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-islamic-primary/30 transition-shadow">
-                  <BookOpen className="w-6 h-6" />
+                <div className="w-16 h-16 flex items-center justify-center">
+                  <img 
+                    src="/Logos/logo with no bg.png" 
+                    alt="شعار المسابقة" 
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                  />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-islamic-primary">مسابقة القرآن الكريم</h1>
-                  <p className="text-xs text-gray-500">محافظة المنيا - العام الهجري ١٤٤٦</p>
+                  <h1 className="text-xl font-bold text-islamic-primary">مسابقة الجرنوس الكبرى للقرآن الكريم</h1>
+                  <p className="text-xs text-gray-500">الدورة الخامسة - محافظة المنيا - العام الهجري ١٤٤٦</p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    <span className="font-semibold">المنسق العام للمسابقة:</span> م/محمد حسان - 
+                    <a 
+                      href="https://wa.me/201114780031" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="font-mono text-green-600 hover:text-green-700 hover:underline transition-colors"
+                      dir="ltr"
+                    >
+                      01114780031
+                    </a>
+                  </p>
                 </div>
               </Link>
             </div>
@@ -44,8 +60,17 @@ function App() {
 
           {/* Footer */}
           <footer className="bg-gradient-to-r from-islamic-primary to-emerald-700 text-white py-6 mt-auto">
-            <div className="container mx-auto px-4 text-center">
-              <p className="opacity-90 text-sm">جميع الحقوق محفوظة © ٢٠٢٦  - مسابقة القرآن الكريم</p>
+            <div className="container mx-auto px-4">
+              <div className="text-center">
+                <p className="opacity-90 text-sm">جميع الحقوق محفوظة © ٢٠٢٦  - مسابقة الجرنوس الكبرى للقرآن الكريم</p>
+                <Link 
+                  to="/admin/login" 
+                  className="inline-block mt-2 opacity-50 hover:opacity-100 transition-opacity text-xs"
+                  title="تسجيل دخول المشرفين"
+                >
+                  لوحة التحكم
+                </Link>
+              </div>
             </div>
           </footer>
         </div>
