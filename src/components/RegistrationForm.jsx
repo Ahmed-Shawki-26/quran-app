@@ -235,7 +235,7 @@ export default function RegistrationForm() {
             {validationState.isValid && validationState.data && (
               <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
                 <CheckCircle className="w-4 h-4" />
-                تاريخ الميلاد: {validationState.data.birthDate.toLocaleDateString('ar-EG')} - {validationState.data.governorate} - {validationState.data.gender}
+                السن: {Math.floor((new Date() - validationState.data.birthDate) / (365.25 * 24 * 60 * 60 * 1000))} سنة - {validationState.data.governorate} - {validationState.data.gender}
               </p>
             )}
           </div>
@@ -316,14 +316,7 @@ export default function RegistrationForm() {
             </div>
           </div>
 
-          {/* Qira'at Level Note - Full Width */}
-          {formData.level === 'مستوى القراءآت' && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-700 text-base text-center font-semibold">
-                القرآن الكريم كاملا برواية الإمام قالون عن نافع من طريق الشاطبية
-              </p>
-            </div>
-          )}
+
 
           {/* Golden Psalms Optional Checkbox */}
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
