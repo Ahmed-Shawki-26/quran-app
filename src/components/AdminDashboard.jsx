@@ -117,7 +117,7 @@ export default function AdminDashboard() {
     const csvContent = [
       headers.join(','),
       ...filteredData.map(row => {
-        const age = row.birth_date ? Math.floor((new Date() - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '';
+        const age = row.birth_date ? Math.floor((new Date('2026-01-06') - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '';
         return [
           `"${row.full_name}"`,
           `"\t${row.national_id}"`,
@@ -317,7 +317,7 @@ export default function AdminDashboard() {
                 </tr>
               ) : (
                 filteredData.map((row) => {
-                  const age = row.birth_date ? Math.floor((new Date() - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '-';
+                  const age = row.birth_date ? Math.floor((new Date('2026-01-06') - new Date(row.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : '-';
                   return (
                   <tr key={row.national_id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900">{row.full_name}</td>

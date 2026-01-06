@@ -235,7 +235,7 @@ export default function RegistrationForm() {
             {validationState.isValid && validationState.data && (
               <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
                 <CheckCircle className="w-4 h-4" />
-                السن: {Math.floor((new Date() - validationState.data.birthDate) / (365.25 * 24 * 60 * 60 * 1000))} سنة - {validationState.data.governorate} - {validationState.data.gender}
+                السن: {Math.floor((new Date('2026-01-06') - validationState.data.birthDate) / (365.25 * 24 * 60 * 60 * 1000))} سنة - {validationState.data.governorate} - {validationState.data.gender}
               </p>
             )}
           </div>
